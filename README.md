@@ -1,6 +1,6 @@
 # 干部网络学院刷课
 
-INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区。
+INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN、BJ地区，BJ地区请移步https://github.com/Sangdi-IT/shuake。
 
 目前有两种方法运行，**第一种软件运行（推荐使用）**，第二种PYTHON代码运行。
 
