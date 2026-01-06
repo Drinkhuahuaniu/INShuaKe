@@ -71,21 +71,26 @@ class Shuake:
         return course_messages
 
     async def get_captcha_image(self):
-        img = await self.page.wait_for_selector('#drag > canvas.undefined')
-        bounding_box = await img.bounding_box()
-        left = round(bounding_box['x'])
-        top = round(bounding_box['y'])
-        right = round(left + bounding_box['width'])
-        down = round(top + bounding_box['height'])
+        try:
+            img = await self.page.wait_for_selector('#drag > canvas.undefined', state='visible', timeout=60000)
 
-        screenshot = await self.page.screenshot()
-        screenshot = Image.open(BytesIO(screenshot))
-        captcha = screenshot.crop((left, top, right, down))
-        captcha_path = './images/captcha.png'
-        with open(captcha_path, 'wb') as f:
-            captcha.save(f, format='png')
-        f.close()
-        return captcha_path
+            data_url = await img.evaluate("""
+                canvas => canvas.toDataURL("image/png")
+            """)
+
+            header, encoded = data_url.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+
+            captcha_path = "./images/captcha.png"
+
+            with open(captcha_path, "wb") as f:
+                f.write(image_bytes)
+
+            # captcha_path = './images/captcha.png'
+            # await img.screenshot(path=captcha_path)
+            return captcha_path
+        except Exception as e:
+            print("error:", e)
 
     async def get_captcha_position(self):
         status = False
@@ -131,15 +136,15 @@ class Shuake:
     async def move_to_slider(self):
         if x_move_position <= 10:
             x_move_position += 200
-        elif x_move_position >= 100 and x_move_position <= 180:
-            x_move_position += 5
+        elif x_move_position >= 10 and x_move_position <= 180:
+            x_move_position += 20
         elif x_move_position >= 180 and x_move_position <= 220:
-            x_move_position += 1
+            x_move_position += 30
         elif x_move_position >= 220 and x_move_position <= 280:
-            x_move_position -= 30
+            x_move_position += 10
         elif x_move_position >= 280 and x_move_position <= 300:
             x_move_position += 30
-        elif x_move_position >=300:
+        elif x_move_position >= 300:
             x_move_position += 35
         slider = await self.page.wait_for_selector('#drag > div.sliderContainer > div > div')
         slider_position = await slider.bounding_box()
