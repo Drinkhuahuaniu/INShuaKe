@@ -129,15 +129,18 @@ class Shuake:
             await refresh_pic_button.click()
 
     async def move_to_slider(self):
-        x_move_position = await self.get_captcha_position()
         if x_move_position <= 10:
-            x_move_position += 140
+            x_move_position += 200
         elif x_move_position >= 100 and x_move_position <= 180:
             x_move_position += 5
-        elif x_move_position >= 180 and x_move_position <= 280:
-            x_move_position += 20
-        elif x_move_position >= 280:
+        elif x_move_position >= 180 and x_move_position <= 220:
+            x_move_position += 1
+        elif x_move_position >= 220 and x_move_position <= 280:
+            x_move_position -= 30
+        elif x_move_position >= 280 and x_move_position <= 300:
             x_move_position += 30
+        elif x_move_position >=300:
+            x_move_position += 35
         slider = await self.page.wait_for_selector('#drag > div.sliderContainer > div > div')
         slider_position = await slider.bounding_box()
         await slider.hover()
