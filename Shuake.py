@@ -15,8 +15,17 @@ class Shuake:
             # playwright = await async_playwright().start()
             # chromium = playwright.chromium
             # self.browser = await chromium.launch(headless=False)
-            self.browser = await playwright.chromium.launch(channel='chrome', headless=True, args=['--mute-audio'])
-            self.context = await self.browser.new_context()
+            self.browser = await playwright.chromium.launch(channel='chrome', headless=True,
+                                                            args=['--mute-audio'])
+            self.context = await self.browser.new_context(viewport={
+                'width': 1707,
+                'height': 932
+            },
+                device_scale_factor=1.5,
+                screen={
+                    'width': 1707,
+                    'height': 932
+                })
             self.page = await self.context.new_page()
             await self.page.goto(
                 "https://www.hngbwlxy.gov.cn/#/")
@@ -125,7 +134,7 @@ class Shuake:
             x_move_position += 140
         elif x_move_position >= 100 and x_move_position <= 180:
             x_move_position += 5
-        elif x_move_position >=180 and x_move_position <=280:
+        elif x_move_position >= 180 and x_move_position <= 280:
             x_move_position += 20
         elif x_move_position >= 280:
             x_move_position += 30
