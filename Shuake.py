@@ -120,8 +120,8 @@ class Shuake:
 
                     x, y, w, h = cv2.boundingRect(contour)
                     # 在目标区域上画一个红框看看效果
-                    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                    cv2.imwrite("images/_{}.jpg".format(x), image)
+                    # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                    # cv2.imwrite("images/_{}.jpg".format(x), image)
                     status = True
                     return x
 
