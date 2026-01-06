@@ -1,0 +1,4 @@
+COURSER_LINK = "https://www.hngbwlxy.gov.cn/#/courseCenter?channelId=865"
+
+
+

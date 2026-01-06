@@ -56,7 +56,7 @@ class Shuake:
         cookies = '; '.join([f"{cookie['name']}={cookie['value']}" for cookie in cookies])
         channelId = COURSER_LINK.split('=')[-1]
         rowlength = await self.page.wait_for_selector(
-            'body > div > div.container_24.clear-fix.ng-scope > div.grid_18.pad_left_20 > div > div > div.allCourse.mar_top_20 > div:nth-child(5) > div > div > div.page-total > span > strong')
+            'body > div > div.container_24.clear-fix.ng-scope > div.grid_18.pad_left_20 > div > div > div.allCourse.mar_top_20 > div.ng-isolate-scope > div > div.page-total > span > strong')
         rowlength = await rowlength.inner_text()
         course_messages = await Get_course_id(cookies, channelId, rowlength, 1)
         return course_messages
@@ -91,7 +91,7 @@ class Shuake:
             # image: 输入的单通道灰度图像。
             # threshold1: 第一个阈值，用于边缘链接。一般设置为较小的值。
             # threshold2: 第二个阈值，用于边缘链接和强边缘的筛选。一般设置为较大的值
-            canny = cv2.Canny(blurred, 200, 400)  # 轮廓
+            canny = cv2.Canny(blurred, 100, 200)  # 轮廓
             # findContours方法用于检测图像中的轮廓,并返回一个包含所有检测到轮廓的列表。
             # contours(可选): 输出的轮廓列表。每个轮廓都表示为一个点集。
             # hierarchy(可选): 输出的轮廓层次结构信息。它描述了轮廓之间的关系，例如父子关系等。
@@ -104,15 +104,15 @@ class Shuake:
                 length = cv2.arcLength(contour, True)
                 # 如果检测区域面积在
                 # 计算轮廓的边界矩形，得到坐标和宽高
-                if 20 < area < 30 and 230 < length < 300:
+                if 4600 < area < 6000 and 230 < length < 500:
                     # 计算轮廓的边界矩形，得到坐标和宽高
                     # x, y: 边界矩形左上角点的坐标。
                     # w, h: 边界矩形的宽度和高度。
 
                     x, y, w, h = cv2.boundingRect(contour)
                     # 在目标区域上画一个红框看看效果
-                    # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                    # cv2.imwrite("images/111.jpg", image)
+                    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                    cv2.imwrite("images/_{}.jpg".format(x), image)
                     status = True
                     return x
 
@@ -121,13 +121,20 @@ class Shuake:
 
     async def move_to_slider(self):
         x_move_position = await self.get_captcha_position()
+        if x_move_position <= 10:
+            x_move_position += 140
+        elif x_move_position >= 100 and x_move_position <= 180:
+            x_move_position += 5
+        elif x_move_position >=180 and x_move_position <=280:
+            x_move_position += 20
+        elif x_move_position >= 280:
+            x_move_position += 30
         slider = await self.page.wait_for_selector('#drag > div.sliderContainer > div > div')
         slider_position = await slider.bounding_box()
         await slider.hover()
         await self.page.mouse.down()
-        await self.page.mouse.move(slider_position['x'] + x_move_position + 30, slider_position['y'] + 2, steps=5)
+        await self.page.mouse.move(slider_position['x'] + x_move_position, slider_position['y'] + 2, steps=3)
         await self.page.mouse.up()
-
         await asynioc.sleep(1)
         class_attribute = await self.page.locator('//*[@id="drag"]/div[2]').get_attribute('class')
         if class_attribute == 'sliderContainer sliderContainer_success':
