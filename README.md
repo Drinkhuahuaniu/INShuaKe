@@ -22,6 +22,7 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN、BJ�
 - May 11, 2024 更新README.md以及调整默认浏览器为无窗口模式
 - February 2, 2025 **更新EXE运行文件**！使用请见说明！
 - January 6,2026 更新网页元素位置变动的导致软件运行失败，简单优化过验证码def,修复不同分辨率导致的滑块位置计算数值偏差
+- January 11,2026 加入数据库记录课程进度，避免重复读取课程浪费时间
 
 # 使用方法
 
@@ -88,8 +89,28 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 4、安装需要的浏览器
 playwright install
+playwright install chromium  #新增Google浏览器
 5、推荐可以Pycharm搭配脚本，运行同样在终端运行，如果右键则不会显示进度条，非常方便
 ```
+
+# ===========新增===========
+库名称playwright​	
+安装命令pip install playwright
+用于浏览器自动化，控制浏览器进行登录、跳转、截图等操作。
+
+库名称opencv-python (cv2)​
+安装命令pip install opencv-python
+用于图像处理，包括验证码图片的读取、缺口识别、模板匹配等。
+
+库名称numpy​
+安装命令pip install numpy
+用于高效的数组和矩阵运算，是 OpenCV 的依赖库，也用于图片数据的处理。
+
+库名称progressbar2​
+安装命令pip install progressbar2
+用于在控制台显示视频学习进度的进度条。
+# ===========新增结束===========
+
 
 ### 二、如何运行
 
@@ -119,7 +140,14 @@ python main.py
 
 ![image-20240511093854203](./assets/image-20240511093854203.png)
 
-将headless设置为True即可不弹出浏览器无浏览器运行，设置为False即可弹出浏览器运行，默认为True。
+#将headless设置为True即可不弹出浏览器无浏览器运行，设置为False即可弹出浏览器运行，默认为True。
+HEADLESS_MODE = False  # 浏览器无窗口模式开关，启用为 True，关闭改为 False
+
+#新增自动采集模板开关，采集验证码最好多运行几天，在根目录内./templates把不合格的图片手动删除，更能精确滑块验证码
+ENABLE_TEMPLATE_CAPTURE = False  # 自动采集模板，启用为 True，关闭改为 False
+
+
+
 
 ### 四、运行截图
 
