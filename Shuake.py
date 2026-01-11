@@ -2,6 +2,7 @@ from progressbar import ProgressBar, Percentage, Bar
 from playwright.async_api import async_playwright
 from config.config import USER_NUMBER, USER_PASSWD, COURSER_LINK
 from getcourseid import Get_course_id
+from cdb import CourseDatabase
 from PIL import Image
 from io import BytesIO
 import asyncio as asynioc
@@ -10,6 +11,10 @@ import re
 
 
 class Shuake:
+    def __init__(self):
+        self.table_name = 'completed_courses_{}'.format(USER_NUMBER)
+        self.db = CourseDatabase(table_name=self.table_name)
+
     async def start(self):
         async with async_playwright() as playwright:
             # playwright = await async_playwright().start()
@@ -179,57 +184,63 @@ class Shuake:
         course_messages = await self.get_course_link()
         for course_message in course_messages:
             for course_id, course_name in course_message.items():
-                course_url = f"https://www.hngbwlxy.gov.cn/#/courseCenter/courseDetails?Id={str(course_id)}&courseType=video"
-                await self.page.goto(course_url)
-                await asynioc.sleep(2)
-                course_status = await self.page.wait_for_selector(
-                    'body > div > div:nth-child(3) > div.container_24 > div > div > div.cpurseDetail.grid_24 > div.c-d-course.clearfix > div > div.course-progress > span.progress-con.ng-binding')
-                course_status = await course_status.inner_text()
-                if course_status == "100.0%":
-                    print(f" {course_name} 课程已学完将为您选择下一个课程！")
+                if self.db.is_course_completed(self.table_name, course_id):
+                    print(f"{course_name} 课程已学完，将为您选择下一个课程！")
                     continue
                 else:
-                    course_play_url = f"https://www.hngbwlxy.gov.cn/#/play/play?Id={str(course_id)}"
-                    await self.page.goto(course_play_url)
-                    try:
-                        study_status = await self.page.wait_for_selector('#ban-study', timeout=4000)
-                        if study_status:
-                            print("今日学习的学分已经够5分，不需要再学习了！")
-                            return True
-                    except:
-                        print("正在自动选择下一门课程！")
-                    tan_box = await self.page.wait_for_selector('#msBox > div.msBtn > span')
-                    await tan_box.click()
-                    check = await self.move_to_slider()
-                    while check is False:
-                        await self.get_captcha_position()
+                    course_url = f"https://www.hngbwlxy.gov.cn/#/courseCenter/courseDetails?Id={str(course_id)}&courseType=video"
+                    await self.page.goto(course_url)
+                    await asynioc.sleep(2)
+                    course_status = await self.page.wait_for_selector(
+                        'body > div > div:nth-child(3) > div.container_24 > div > div > div.cpurseDetail.grid_24 > div.c-d-course.clearfix > div > div.course-progress > span.progress-con.ng-binding')
+                    course_status = await course_status.inner_text()
+                    if course_status == "100.0%":
+                        print(f"{course_name} 课程已学完将为您选择下一个课程！")
+                        self.db.add_completed_course(self.table_name, course_id, course_name)
+                        continue
+                    else:
+                        course_play_url = f"https://www.hngbwlxy.gov.cn/#/play/play?Id={str(course_id)}"
+                        await self.page.goto(course_play_url)
+                        try:
+                            study_status = await self.page.wait_for_selector('#ban-study', timeout=4000)
+                            if study_status:
+                                print("今日学习的学分已经够5分，不需要再学习了！")
+                                return True
+                        except:
+                            print("正在自动选择下一门课程！")
+                        tan_box = await self.page.wait_for_selector('#msBox > div.msBtn > span')
+                        await tan_box.click()
                         check = await self.move_to_slider()
-                    print(f"{course_name} 课程开始学习！")
-                    course_progress = await self.wait_for_jwplayer(
-                        "#myplayer_controlbar > span.jwgroup.jwcenter > span.jwslider.jwtime > span.jwrail.jwsmooth > span.jwprogressOverflow")
-                    pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=100).start()
-                    while True:
-                        style1 = await course_progress.get_attribute("style")
-                        width1 = next(
-                            (s.split(":")[1].strip() for s in style1.split(";") if
-                             s.split(":")[0].strip() == "width"),
-                            None)
-                        await asynioc.sleep(1.5)
-                        style2 = await course_progress.get_attribute("style")
-                        width2 = next(
-                            (s.split(":")[1].strip() for s in style2.split(";") if
-                             s.split(":")[0].strip() == "width"),
-                            None)
-                        width_num = float(width2.strip('%'))
-                        pbar.update(width_num)
-                        # 0.0
-                        if (width1 == width2) and width_num == 0.0:
-                            pbar.finish()
-                            break
-                # 十秒钟不能打开另一个课程需要等待
-                await self.page.goto(COURSER_LINK)
-                await self.page.reload()
-                await asynioc.sleep(12)
+                        while check is False:
+                            await self.get_captcha_position()
+                            check = await self.move_to_slider()
+                        print(f"{course_name} 课程开始学习！")
+                        course_progress = await self.wait_for_jwplayer(
+                            "#myplayer_controlbar > span.jwgroup.jwcenter > span.jwslider.jwtime > span.jwrail.jwsmooth > span.jwprogressOverflow")
+                        pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=100).start()
+                        while True:
+                            style1 = await course_progress.get_attribute("style")
+                            width1 = next(
+                                (s.split(":")[1].strip() for s in style1.split(";") if
+                                 s.split(":")[0].strip() == "width"),
+                                None)
+                            await asynioc.sleep(1.5)
+                            style2 = await course_progress.get_attribute("style")
+                            width2 = next(
+                                (s.split(":")[1].strip() for s in style2.split(";") if
+                                 s.split(":")[0].strip() == "width"),
+                                None)
+                            width_num = float(width2.strip('%'))
+                            pbar.update(width_num)
+                            # 0.0
+                            if (width1 == width2) and width_num == 0.0:
+                                pbar.finish()
+                                break
+                    # 十秒钟不能打开另一个课程需要等待
+                    self.db.add_completed_course(self.table_name, course_id, course_name)
+                    await self.page.goto(COURSER_LINK)
+                    await self.page.reload()
+                    await asynioc.sleep(12)
 
         print("当前URL下的课程已经全部学习完毕！")
         return True
