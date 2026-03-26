@@ -2,6 +2,8 @@
 
 INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN、BJ地区，BJ地区请移步https://github.com/Sangdi-IT/shuake
 
+HN地区另开族谱的兄弟：https://github.com/xiaoxiaoxoxoxoxo/INShuaKe
+
 目前有两种方法运行，**第一种软件运行（推荐使用）**，第二种PYTHON代码运行。
 
 有任何问题随时提问Issue，本人看到会第一时间回复。
